@@ -16,7 +16,7 @@
     u64 tau;
 };*/
 
-
+/**/
 void m_data_get(struct rez* magnMoment);
 
 
