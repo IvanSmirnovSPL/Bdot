@@ -159,26 +159,30 @@ void sum(f32* a, s16 n_a, f32* rez)
     for (i = 0; i < n_a; i++){*rez += a[i];}
 }
 
-void calculate_magnetic_moment(f32* b, s16 n_b, f32* w, s16 n_w, u64 time, f32* m, s16 n_m, u64* tau)
+void calculate_magnetic_moment(f32* b, s16 n_b, f32* w, s16 n_w, u64 time, struct rez* magnMoment)
 {
+
     struct config_values conf;
     conf.m_max[0] = 0.5; conf.m_max[1] = 0.5; conf.m_max[2] = 0.2;
     conf.angle = 3.14159265358979323846 / 6;
-    conf.tolerance = 5;
+    conf.tolerance = 2;
     conf.speed = 5;
     conf.work_time = 900; conf.work_time_b_dot = 300;
 
-    f32  w_avg[3], sigma[3], sigma_total;
+    f32  w_avg[3], sigma[3], sigma_total, m[3];
+    u64 tau;
 
     deg_to_rad(w, n_w);
-    average(w, n_w, w_avg, n_m);
-    determine_deviation(w, n_w, w_avg, sigma, n_m);  sum(sigma, n_m, &sigma_total);
+    average(w, n_w, w_avg, 3);
+    determine_deviation(w, n_w, w_avg, sigma, 3);  sum(sigma, 3, &sigma_total);
     if (sigma_total < conf.tolerance)
     {
-        m_from_b_and_w (b, n_b, w, n_w, conf, m, n_m, tau);
+
+        m_from_b_and_w (b, n_b, w, n_w, conf, m, 3, &tau);
     }
     else
     {
-        b_dot_from_field_only(b, n_b, time, conf, m, n_m, tau);
+        b_dot_from_field_only(b, n_b, time, conf, m, 3, &tau);
     }
+    magnMoment->x = m[0]; magnMoment->y = m[1]; magnMoment->z = m[2]; magnMoment->tau = tau;
 }
