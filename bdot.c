@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <math.h>
 #include "bdot.h"
+//#include "config.h"
 
-struct config_values
+/*struct config_values
 {
     f32 m_max[3], tolerance, angle, speed;
     u64 work_time , work_time_b_dot;
-};
+};*/
 
 /* show named vector*/
 void show_item(char* name, f32* array, s16 n_a)
@@ -128,7 +129,7 @@ void scaling(f32 *m, s16 n_m, f32 *m_max)
 }
 
 /*if angular velocity sensor doesn't work*/
-void b_dot_from_field_only(f32* b, s16 n_b, u64 step, struct config_values conf, f32* rez, s16 n_r, u64* tau)
+void b_dot_from_field_only(f32* b, s16 n_b, u64 step, struct config_values* config, f32* rez, s16 n_r, u64* tau)
 {
     s16 tmp = (n_b / 3) / 2;
     s16 center = tmp * 3;
@@ -136,11 +137,11 @@ void b_dot_from_field_only(f32* b, s16 n_b, u64 step, struct config_values conf,
     weighted_moving_average(b, center, vec1, 3);
     weighted_moving_average(b + center, n_b - center, vec2, 3);
     derivative (vec2, 3, vec1, 3, step * 500, rez, n_r);
-    scaling(rez, 3, conf.m_max);
-    *tau = conf.work_time_b_dot;
+    scaling(rez, 3, config->m_max);
+    *tau = config->work_time_b_dot;
 }
 
-void m_from_b_and_w (f32* b, s16 n_b, f32* w, s16 n_w, struct config_values conf, f32* rez, s16 n_r, u64* tau)
+void m_from_b_and_w (f32* b, s16 n_b, f32* w, s16 n_w, struct config_values* config, f32* rez, s16 n_r, u64* tau)
 {
     s16 i;
     f32 b_avg[3], w_avg[3], tmp = 0;
@@ -148,8 +149,8 @@ void m_from_b_and_w (f32* b, s16 n_b, f32* w, s16 n_w, struct config_values conf
     weighted_moving_average(w, n_w, w_avg, n_r); for (i = 0; i < n_r; i++){tmp += w_avg[i] * w_avg[i];}
     //show_item("b_avg", b_avg, 3);
     cross_product(w_avg, n_r, b_avg, n_r,  rez, n_r);
-    scaling(rez, n_r, conf.m_max);
-    *tau = sqrt(tmp) < conf.speed ? conf.work_time : conf.angle * 1000 / sqrt(tmp);
+    scaling(rez, n_r, config->m_max);
+    *tau = sqrt(tmp) < config->speed ? config->work_time : config->angle * 1000 / sqrt(tmp);
 }
 
 void sum(f32* a, s16 n_a, f32* rez)
@@ -161,14 +162,6 @@ void sum(f32* a, s16 n_a, f32* rez)
 
 void calculate_magnetic_moment(f32* b, s16 n_b, f32* w, s16 n_w, u64 time, struct rez* magnMoment)
 {
-
-    struct config_values conf;
-    conf.m_max[0] = 0.5; conf.m_max[1] = 0.5; conf.m_max[2] = 0.2;
-    conf.angle = 3.14159265358979323846 / 6;
-    conf.tolerance = 2;
-    conf.speed = 5;
-    conf.work_time = 900; conf.work_time_b_dot = 300;
-
     f32  w_avg[3], sigma[3], sigma_total, m[3];
     u64 tau;
 
@@ -178,11 +171,11 @@ void calculate_magnetic_moment(f32* b, s16 n_b, f32* w, s16 n_w, u64 time, struc
     if (sigma_total < conf.tolerance)
     {
 
-        m_from_b_and_w (b, n_b, w, n_w, conf, m, 3, &tau);
+        m_from_b_and_w (b, n_b, w, n_w, &conf, m, 3, &tau);
     }
     else
     {
-        b_dot_from_field_only(b, n_b, time, conf, m, 3, &tau);
+        b_dot_from_field_only(b, n_b, time, &conf, m, 3, &tau);
     }
     magnMoment->x = m[0]; magnMoment->y = m[1]; magnMoment->z = m[2]; magnMoment->tau = tau;
 }

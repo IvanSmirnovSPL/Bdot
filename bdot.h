@@ -8,13 +8,14 @@
 #endif //BDOT_BDOT_H
 
 #include "globdefs.h"
-
+#include "config.h"
 
 struct rez
 {
     f32 x, y, z;
     u64 tau;
 };
+
 
 
 
