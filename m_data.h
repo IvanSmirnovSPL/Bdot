@@ -16,7 +16,8 @@
     u64 tau;
 };*/
 
-/**/
+/* Использую imu_data_get(imu_data_s* imu) из imu_data.h */
+/* Возвращаю структуру rez - магнитный момент по 3 осям(x, y, z) и время действия(tau) */
 void m_data_get(struct rez* magnMoment);
 
 
