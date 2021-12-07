@@ -4,13 +4,12 @@
 #include <stdio.h>
 #include <math.h>
 #include "bdot.h"
-//#include "config.h"
 
-/*struct config_values
+struct config_values
 {
     f32 m_max[3], tolerance, angle, speed;
     u64 work_time , work_time_b_dot;
-};*/
+}conf;
 
 /* show named vector*/
 void show_item(char* name, f32* array, s16 n_a)
@@ -136,6 +135,7 @@ void b_dot_from_field_only(f32* b, s16 n_b, u64 step, struct config_values* conf
     f32 vec1[3], vec2[3];
     weighted_moving_average(b, center, vec1, 3);
     weighted_moving_average(b + center, n_b - center, vec2, 3);
+    //show_item("Average b", b,3);
     derivative (vec2, 3, vec1, 3, step * 500, rez, n_r);
     scaling(rez, 3, config->m_max);
     *tau = config->work_time_b_dot;
@@ -162,15 +162,21 @@ void sum(f32* a, s16 n_a, f32* rez)
 
 void calculate_magnetic_moment(f32* b, s16 n_b, f32* w, s16 n_w, u64 time, struct rez* magnMoment)
 {
+
+    conf.m_max[0] = M_MAX_X; conf.m_max[1] = M_MAX_Y; conf.m_max[2] = M_MAX_Z;
+    conf.angle = ANGLE;
+    conf.tolerance = TOLERANCE;
+    conf.speed = SPEED;
+    conf.work_time = WORK_TIME; conf.work_time_b_dot = WORK_TIME_B_DOT;
     f32  w_avg[3], sigma[3], sigma_total, m[3];
     u64 tau;
 
     deg_to_rad(w, n_w);
     average(w, n_w, w_avg, 3);
     determine_deviation(w, n_w, w_avg, sigma, 3);  sum(sigma, 3, &sigma_total);
+
     if (sigma_total < conf.tolerance)
     {
-
         m_from_b_and_w (b, n_b, w, n_w, &conf, m, 3, &tau);
     }
     else

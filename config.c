@@ -8,4 +8,4 @@ conf.m_max[0] = 0.1253914864729585 * 2; conf.m_max[1] = 0.1253914864729585 * 2; 
 conf.angle = M_PI / 6;
 conf.tolerance = 2;
 conf.speed = 5;
-conf.work_time = 900; conf.work_time_b_dot = 300;
+conf.work_time = 900; conf.work_time_b_dot = 500;
